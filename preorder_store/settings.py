@@ -63,17 +63,6 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
-TESTING = "test" in sys.argv
-
-if not TESTING:
-    INSTALLED_APPS = [
-        *INSTALLED_APPS,
-        "debug_toolbar",
-    ]
-    MIDDLEWARE = [
-        "debug_toolbar.middleware.DebugToolbarMiddleware",
-        *MIDDLEWARE,
-    ]
 
 ROOT_URLCONF = 'preorder_store.urls'
 
@@ -157,10 +146,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_ROOT = BASE_DIR / 'shoplist/media'
 
 MEDIA_URL = 'media/'
-
-INTERNAL_IPS = [
-    "127.0.0.1",
-]
 
 DATA_UPLOAD_MAX_NUMBER_FILES = 1000
 

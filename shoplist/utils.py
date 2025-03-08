@@ -58,11 +58,11 @@ def get_session_info(target_date: date) -> list:
     monitor = driver.find_element(By.ID, 'monitor')
     wait = WebDriverWait(driver, timeout=10)
     wait.until(lambda d: monitor.is_displayed())
-    # driver.save_screenshot('./image2.png')
+    driver.save_screenshot('./image2.png')  # screenshot
 
     codes = driver.find_elements(By.CLASS_NAME, 'code')
     remains = driver.find_elements(By.CLASS_NAME, 'remain')
-    # driver.save_screenshot('./image3.png')  # screenshot
+    driver.save_screenshot('./image3.png')  # screenshot
     codes = codes[2:]
     remains = remains[1:]
     print('--util.get_session_info debug-- codes:')
