@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Photos</title>
+</head>
+<body>
+    {% if products %}
+    <fieldset>
+        <legend>Photos upload</legend>
+        <form action="{% url 'shoplist:add_photos' sale_session.id %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{form}}
+            <br>
+            <p>Each photo must contains sale code in filename in order to match</p>
+            <button type="submit">Submit</button>
+        </form>
+        <hr>
+        
+        <p>Products with missing photos</p>
+        <table>
+            <tr>
+                <th>Sale Code</th>
+                <th>Description</th>
+            </tr>
+            {% for product in products %}
+            <tr>
+                <td>{{product.sale_code}}</td>
+                <td>{{product.description_text}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        
+    </fieldset>
+    {% else %}
+    <h1>All products have their photo</h1>
+    {% endif %}
+</body>
+</html>

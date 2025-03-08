@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shoplist</title>
+    {% load static %}
+    <link rel="stylesheet" href="{%static 'shoplist/style.css'%}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="{% static 'shoplist/script.js' %}"async></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous" async></script>
+<body>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    
+    {% if sessions %}
+    <div class="row g-0">
+        <div class="col">
+            <select id="sale_date" class="form-select">
+                {% for session in sessions %}
+                    {% if session.id == this_session.id %}
+                    <option value="{% url 'shoplist:buying_list' sale_date_str=session filter='all' %}" selected="selected">
+                        {{ session }}
+                    </option>
+                    {% else %}
+                    <option value="{% url 'shoplist:buying_list' sale_date_str=session filter='all' %}"> 
+                        {{ session }}
+                    </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <form action="{% url 'shoplist:update_buy_list' %}" method="POST">
+                {% csrf_token %}
+                    <input type="hidden" id="date_to_update" name="sale_date_id" value="{{this_session.id}}">
+                    <button type="submit" class="btn btn-primary" >Update</button>
+            </form>
+        </div>    
+        <div class="col-auto">
+            <a href="{% url 'shoplist:add_photos' this_session.id %}" class="btn btn-outline-primary">Add Photos</a>
+        </div>
+    </div>    
+    {% endif %}
+    
+    <a href="{% url 'shoplist:create_session' %}">New Session</a>
+    <br>
+    <br>
+    <div class="nav nav-tabs">
+        <a href="{% url 'shoplist:buying_list' sale_date_str=this_session filter='buying'%}" {% if filter == 'buying' %}class="nav-link active" {% else %} class="nav-link" {% endif %}>BUYING</a>
+        <a href="{% url 'shoplist:buying_list' sale_date_str=this_session filter='all'%}" {% if filter == 'all' %}class="nav-link active" {% else %} class="nav-link" {% endif %}>ALL</a>
+        <a href="{% url 'shoplist:buying_list' sale_date_str=this_session filter='done'%}" {% if filter == 'done' %}class="nav-link active" {% else %} class="nav-link"  {% endif %}>DONE</a>
+    </div>
+    
+    {% if product_list %}
+    <div class="container-fluid">
+        {% for product in product_list %}
+        <div id="field_{{product.id}}" class="card mb-3">  
+            <div class="row card-body">
+                <div class="col">
+                    <h1>{{ product.sale_code }}</h1>
+                    <h3>{{ product.description_text }}</h3>
+                    <div class="row">
+                        <div class="col-auto">
+                            <h3><span id="amount_{{product.id}}">{{product.bought_amount}}</span> / <span id="order_{{product.id}}">{{product.order_amount}}</span></h3>
+                        </div>
+                        <div class="col">
+                            <form class="adjust-order">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value={{product.id}}>
+                                <input type="hidden" name="url" value={% url 'shoplist:adjust' %}> {% comment %} sending url to javascript to not have to hard code the url {% endcomment %}
+                                <input type="hidden" class="order_adjust" name="order_adjust">
+                                {% comment %} <span>Adjust order:</span> {% endcomment %}
+                                <button class="minus_order btn btn-outline-secondary" type="submit">-1</button>
+                                <button class="plus_order btn btn-outline-secondary" type="submit">+1</button>    
+                            </form>    
+                        </div>
+                    </div> 
+                </div>
+                <div class="col-auto align-self-center">
+                    <p>buy:</p>
+                    <h1 id="buy_indicator_{{product.id}}" class="display-1">
+                        {% if product.remain > 0 %}
+                            {{product.remain}}
+                        {% else %}
+                            DONE
+                        {% endif %}
+                    </h1>
+            
+                </div>
+            </div>
+            <div class="row card-body" >
+                <div class="ratio ratio-1x1">
+                    <img src="{{product.image.image.url}}" class="object-fit-contain border rounded" data-bs-toggle="modal" data-bs-target="#img_modal_{{product.id}}">
+                </div>
+                
+            </div>
+
+            
+            <div class="row justify-content-end card-body">
+                <form class="buy-form col-6">
+                    {% csrf_token %}
+                    <div class="input-group input-group-lg">
+                        <input type="hidden" name="product_id" value={{product.id}}>
+                        <input type="hidden" name="url" value={% url 'shoplist:buy' %}> {% comment %} sending url to javascript to not have to hard code the url {% endcomment %}
+                        <input type="number" class="form-control" name="buy_amount" id="buy_input_{{product.id}}"  {% if product.remain > 0 %} value="{{product.remain}}" {% else %}value="0" {% endif %} required>
+                        <button class="buy_btn btn btn-success" type="submit">Buy</button>
+                        <br>
+                    </div>
+                </form>    
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="img_modal_{{product.id}}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <img src="{{product.image.image.url}}" data-bs-dismiss="modal">
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+            
+        
+    {% else %}
+        <p>No products are available.</p>
+    {% endif %}
+        
+</body>
+</html>
+

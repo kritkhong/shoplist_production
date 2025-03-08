@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Session</title>
+</head>
+<body>
+    <form action="{% url 'shoplist:create_session' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <fieldset>
+            <legend>New Session</legend>
+            {{form}}
+            <br><br>
+            <button type="submit">Submit</button>
+        </fieldset>
+    </form>
+</body>
+</html>
