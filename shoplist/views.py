@@ -26,7 +26,7 @@ def index(request):
 def buying_list(request, sale_date_str, filter):
     sale_date_obj = datetime.strptime(sale_date_str, "%d-%m-%Y").date()
     sale_date = SaleSession.objects.get(sale_date=sale_date_obj)
-    product_list = Product.objects.filter(sale_date=sale_date)
+    product_list = Product.objects.filter(sale_date=sale_date).order_by('pk')
     if filter == 'buying':
         product_list = product_list.filter(bought_amount__lt=F('order_amount'))
     elif filter == 'done':
