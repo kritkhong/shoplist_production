@@ -13,7 +13,12 @@ from selenium.webdriver.support.wait import WebDriverWait
 def get_session_info(target_date: date) -> list:
     if ('RENDER' not in os.environ):  # means develop local
         load_dotenv()
-    driver = webdriver.Chrome()
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+
+    driver = webdriver.Chrome(options=chrome_options)
+    # driver = webdriver.Chrome()
+
     driver.get('https://mickeycafe19.vrich619.com/sale')
 
     input_user = driver.find_element(By.NAME, 'username')
