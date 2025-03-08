@@ -22,7 +22,7 @@ class Image(models.Model):
     image = models.ImageField(upload_to=image_path)
 
     def __str__(self):
-        return f'{self.sale_date} {self.image.name.split('/')[-1]}'
+        return f"{self.sale_date} {self.image.name.split('/')[-1]}"
 
 
 class Product(models.Model):
