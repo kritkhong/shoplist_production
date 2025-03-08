@@ -13,11 +13,11 @@ from selenium.webdriver.support.wait import WebDriverWait
 def get_session_info(target_date: date) -> list:
     if ('RENDER' not in os.environ):  # means develop local
         load_dotenv()
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-
-    driver = webdriver.Chrome(options=chrome_options)
-    # driver = webdriver.Chrome()
+        driver = webdriver.Chrome()
+    else:
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        driver = webdriver.Chrome(options=chrome_options)
 
     driver.get('https://mickeycafe19.vrich619.com/sale')
 
@@ -62,7 +62,7 @@ def get_session_info(target_date: date) -> list:
 
     codes = driver.find_elements(By.CLASS_NAME, 'code')
     remains = driver.find_elements(By.CLASS_NAME, 'remain')
-    # driver.save_screenshot('./image3.png')
+    # driver.save_screenshot('./image3.png')  # screenshot
     codes = codes[2:]
     remains = remains[1:]
     print('--util.get_session_info debug-- codes:')
@@ -75,7 +75,7 @@ def get_session_info(target_date: date) -> list:
         if len(text) == 1:
             continue  # there are sometimes has display:none that class name = code
         code = text[1].replace('!', '')  # sometime code contain '!' in VRIch
-        caption = text[2]
+        caption = ' '.join(text[2:])
         count = int(remains[i].text.split(' ')[0])
         output.append((code, caption, count))
     driver.quit()

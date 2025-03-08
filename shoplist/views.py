@@ -5,6 +5,7 @@ from .models import SaleSession, Product, Image
 from django.urls import reverse
 from django.db.models import F
 from datetime import date, datetime
+from natsort import natsorted
 from django.views.generic.edit import FormView
 from django.contrib import messages
 from django.core import serializers
@@ -26,12 +27,13 @@ def index(request):
 def buying_list(request, sale_date_str, filter):
     sale_date_obj = datetime.strptime(sale_date_str, "%d-%m-%Y").date()
     sale_date = SaleSession.objects.get(sale_date=sale_date_obj)
-    product_list = Product.objects.filter(sale_date=sale_date).order_by('pk')
+    product_list = Product.objects.filter(sale_date=sale_date)
     if filter == 'buying':
         product_list = product_list.filter(bought_amount__lt=F('order_amount'))
     elif filter == 'done':
         product_list = product_list.filter(
             bought_amount__gte=F('order_amount'))
+    product_list = natsorted(product_list, key=lambda o: o.sale_code)
     all_session = SaleSession.objects.all().order_by(
         "-sale_date")  # for user to select
     context = {
