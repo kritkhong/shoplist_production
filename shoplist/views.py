@@ -18,7 +18,7 @@ import re
 @login_required(login_url='/users/login')
 def index(request):
     lastest_sale = str(SaleSession.objects.order_by("-sale_date")[0])
-    filter = 'all'
+    filter = 'buying'
     return HttpResponseRedirect(reverse('shoplist:buying_list', args=[lastest_sale, filter]))
 
 
