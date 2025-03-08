@@ -11,7 +11,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 
 def get_session_info(target_date: date) -> list:
-    load_dotenv()  # uncomment this in development
+    if ('RENDER' not in os.environ):  # means develop local
+        load_dotenv()
     driver = webdriver.Chrome()
     driver.get('https://mickeycafe19.vrich619.com/sale')
 
