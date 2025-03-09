@@ -31,13 +31,17 @@ def get_session_info(target_date: date) -> list:
     button = driver.find_element(
         By.XPATH, '/html/body/div/b/div/form/div[3]/div[2]/button')
     button.click()
+    print('[utils.get_session_info]: logging in...')
 
     # toggle sales-monitor view
     is_product_list = driver.find_element(By.ID, 'product-list').is_displayed()
     if (is_product_list):
         print('[utils.get_session_info]: toggle sales monitor view...')
         monitor_toggle = driver.find_element(By.ID, 'monitor-toggle')
-        monitor_toggle.click()
+        if (monitor_toggle):
+            print('[utils.get_session_info]: monitor toggle button located...')
+            monitor_toggle.click()
+            print('[utils.get_session_info]: monitor toggle button clicked...')
 
     sale_date_ele = driver.find_element(By.ID, 'search_date')
     date_str = sale_date_ele.get_attribute('value')
@@ -54,6 +58,8 @@ def get_session_info(target_date: date) -> list:
         wait = WebDriverWait(add_stock_btn, timeout=10)
         wait.until(lambda btn: btn.get_attribute('style') == "display: none;")
         # driver.save_screenshot('./image1_5.png')
+    else:
+        print('[utils.get_session_info]: sale date correct, continue...')
 
     wait = WebDriverWait(driver, timeout=10)
     wait.until(lambda d: len(d.find_elements(
