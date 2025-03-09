@@ -11,7 +11,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 
 def get_session_info(target_date: date) -> list:
-    if ('RENDER' not in os.environ):  # means develop local
+
+    if ('RENDER' not in os.environ):  # local development
         load_dotenv()
         driver = webdriver.Chrome()
     else:
@@ -29,54 +30,73 @@ def get_session_info(target_date: date) -> list:
         By.XPATH, '/html/body/div/b/div/form/div[3]/div[2]/button')
     button.click()
 
+    # toggle sales-monitor view
     is_product_list = driver.find_element(By.ID, 'product-list').is_displayed()
-    # driver.save_screenshot('./image0.png')
-
     if (is_product_list):
+        print('[utils.get_session_info]: toggle sales monitor view...')
         monitor_toggle = driver.find_element(By.ID, 'monitor-toggle')
         monitor_toggle.click()
-    # driver.save_screenshot('./image1.png')
 
     sale_date_ele = driver.find_element(By.ID, 'search_date')
     date_str = sale_date_ele.get_attribute('value')
     target_date_str = target_date.strftime("%d/%m/%Y")
 
+    # sale_date is not the most recent
     if (target_date_str != date_str):
-        # driver.save_screenshot('./image1_1.png')
+        print('[utils.get_session_info]: changing sale date...')
         sale_date_ele.clear()
-        # driver.save_screenshot('./image1_2.png')
         sale_date_ele.send_keys(target_date_str)
-        # driver.save_screenshot('./image1_3.png')
         sale_date_ele.send_keys(Keys.ENTER)
-        # driver.save_screenshot('./image1_4.png')
-        # this button indicate javascipt finish loading
+        # this button indicate sale date has changed and Javascipt finish loading
         add_stock_btn = driver.find_element(By.ID, 'add_from_stock')
         wait = WebDriverWait(add_stock_btn, timeout=10)
-        wait.until(lambda b: b.get_attribute('style') == "display: none;")
+        wait.until(lambda btn: btn.get_attribute('style') == "display: none;")
         # driver.save_screenshot('./image1_5.png')
 
-    monitor = driver.find_element(By.ID, 'monitor')
     wait = WebDriverWait(driver, timeout=10)
-    wait.until(lambda d: monitor.is_displayed())
+    wait.until(lambda d: len(d.find_elements(
+        By.CLASS_NAME, 'monitor-item')) > 1)
+    monitor_items = driver.find_elements(By.CLASS_NAME, 'monitor-item')
+    print(
+        f'[utils.get_session_info]: monitor-items found (hidden included) = {len(monitor_items)}')
     # driver.save_screenshot('./image2.png')  # screenshot
 
-    codes = driver.find_elements(By.CLASS_NAME, 'code')
-    remains = driver.find_elements(By.CLASS_NAME, 'remain')
-    # driver.save_screenshot('./image3.png')  # screenshot
-    codes = codes[2:]
-    remains = remains[1:]
-    print('--util.get_session_info debug-- codes:')
-    for i in range(len(codes)):
-        print(codes[i].text, remains[i].text)
     output = []
+    for monitor_item in monitor_items:
+        is_hide = monitor_item.get_attribute('hide')
+        if not is_hide:
+            code = monitor_item.get_attribute('data-code')
+            caption = monitor_item.get_attribute('data-description')
+            count = monitor_item.get_attribute('data-details_count')
+            output.append((code, caption, count))
 
-    for i in range(len(codes)):
-        text = codes[i].text.split(' ')
-        if len(text) == 1:
-            continue  # there are sometimes has display:none that class name = code
-        code = text[1].replace('!', '')  # sometime code contain '!' in VRIch
-        caption = ' '.join(text[2:])
-        count = int(remains[i].text.split(' ')[0])
-        output.append((code, caption, count))
+    '''
+    OLD VERSION
+    '''
+    # codes = driver.find_elements(By.CLASS_NAME, 'code')
+    # remains = driver.find_elements(By.CLASS_NAME, 'remain')
+    # # driver.save_screenshot('./image3.png')  # screenshot
+    # codes = codes[2:]
+    # remains = remains[1:]
+    # print('--util.get_session_info debug-- codes:')
+    # for i in range(len(codes)):
+    #     print(codes[i].text, remains[i].text)
+    # output = []
+
+    # for i in range(len(codes)):
+    #     text = codes[i].text.split(' ')
+    #     if len(text) == 1:
+    #         continue  # there are sometimes has display:none that class name = code
+    #     code = text[1].replace('!', '')  # sometime code contain '!' in VRIch
+    #     caption = ' '.join(text[2:])
+    #     count = int(remains[i].text.split(' ')[0])
+    #     output.append((code, caption, count))
     driver.quit()
     return output
+
+
+# ### FOR TEST ###
+# sale_date = date(2025, 3, 1)
+# output = get_session_info(sale_date)
+# for tuple in output:
+#     print(tuple)
