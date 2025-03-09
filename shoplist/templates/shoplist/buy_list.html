@@ -30,7 +30,7 @@
                         {{ session }}
                     </option>
                     {% else %}
-                    <option value="{% url 'shoplist:buying_list' sale_date_str=session filter='all' %}"> 
+                    <option value="{% url 'shoplist:buying_list' sale_date_str=session filter='buying' %}"> 
                         {{ session }}
                     </option>
                     {% endif %}
