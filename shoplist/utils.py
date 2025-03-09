@@ -58,7 +58,7 @@ def get_session_info(target_date: date) -> list:
         By.CLASS_NAME, 'monitor-item')) > 1)
     monitor_items = driver.find_elements(By.CLASS_NAME, 'monitor-item')
     print(
-        f'[utils.get_session_info]: monitor-items found (hidden included) = {len(monitor_items)}')
+        f'[utils.get_session_info]: Total monitor-items found = {len(monitor_items)}')
     # driver.save_screenshot('./image2.png')  # screenshot
 
     output = []
@@ -69,7 +69,7 @@ def get_session_info(target_date: date) -> list:
             caption = monitor_item.get_attribute('data-description')
             count = monitor_item.get_attribute('data-details_count')
             output.append((code, caption, count))
-
+    print(f'[utils.get_session_info]: Monitor-items used = {len(output)}')
     '''
     OLD VERSION
     '''
