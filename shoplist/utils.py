@@ -13,14 +13,14 @@ from selenium.webdriver.support.wait import WebDriverWait
 def get_session_info(target_date: date) -> list:
 
     if ('RENDER' not in os.environ):  # local development
-        print("[utils.get_session_info initiated on LOCAL]")
+        print("[utils.get_session_info]: initiated on LOCAL...")
         load_dotenv()
-        driver = webdriver.Chrome()
     else:
-        print("[utils.get_session_info initiated on RENDER]")
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        driver = webdriver.Chrome(options=chrome_options)
+        print("[utils.get_session_info]: initiated on RENDER...")
+
+    chrome_options = Options()
+    chrome_options.add_argument("--headless=new")
+    driver = webdriver.Chrome(options=chrome_options)
 
     driver.get('https://mickeycafe19.vrich619.com/sale')
 
