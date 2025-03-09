@@ -61,25 +61,53 @@ def get_session_info(target_date: date) -> list:
     else:
         print('[utils.get_session_info]: sale date correct, continue...')
 
-    wait = WebDriverWait(driver, timeout=10)
-    wait.until(lambda d: len(d.find_elements(
-        By.CLASS_NAME, 'monitor-item')) > 1)
-    monitor_items = driver.find_elements(By.CLASS_NAME, 'monitor-item')
-    print(
-        f'[utils.get_session_info]: Total monitor-items found = {len(monitor_items)}')
-    # driver.save_screenshot('./image2.png')  # screenshot
-
-    output = []
-    for monitor_item in monitor_items:
-        is_hide = monitor_item.get_attribute('hide')
-        if not is_hide:
-            code = monitor_item.get_attribute('data-code')
-            caption = monitor_item.get_attribute('data-description')
-            count = monitor_item.get_attribute('data-details_count')
-            output.append((code, caption, count))
-    print(f'[utils.get_session_info]: Monitor-items used = {len(output)}')
     '''
-    OLD VERSION
+    VERSION 3: Refined version 1
+    '''
+    wait = WebDriverWait(driver, timeout=10)
+    wait.until(lambda d: len(d.find_elements(By.CLASS_NAME, 'code'))
+               > 2)  # 2 .code elements already existed as table head
+
+    codes = driver.find_elements(By.CLASS_NAME, 'code')[2:]
+    remains = driver.find_elements(By.CLASS_NAME, 'remain')[1:]
+    print(
+        f'[utils.get_session_info]: Total .code elements found = {len(codes)}')
+    output = []
+    for i in range(len(codes)):
+        if codes[i].text and remains[i].text:
+            code_des = codes[i].text.strip().split()
+            code = code_des[0].strip('!')  # sometime code contain '!' in VRIch
+            description = ' '.join(code_des[1:])
+            count = remains[i].text.split()[0]
+            output.append((code, description, count))
+            print(
+                f'[utils.get_session_info]: adding{(code, description, count)}')
+            # driver.save_screenshot('./image2.png')  # screenshot
+    print(f'[utils.get_session_info]: Total output = {len(output)}')
+
+    '''
+    VERSION 2: take too much memory server cannot run
+    '''
+    # wait = WebDriverWait(driver, timeout=10)
+    # wait.until(lambda d: len(d.find_elements(
+    #     By.CLASS_NAME, 'monitor-item')) > 1)
+    # monitor_items = driver.find_elements(By.CLASS_NAME, 'monitor-item')
+    # print(
+    #     f'[utils.get_session_info]: Total monitor-items found = {len(monitor_items)}')
+    # # driver.save_screenshot('./image2.png')  # screenshot
+
+    # output = []
+    # for monitor_item in monitor_items:
+    #     is_hide = monitor_item.get_attribute('hide')
+    #     if not is_hide:
+    #         code = monitor_item.get_attribute('data-code')
+    #         caption = monitor_item.get_attribute('data-description')
+    #         count = monitor_item.get_attribute('data-details_count')
+    #         output.append((code, caption, count))
+    # print(f'[utils.get_session_info]: Monitor-items used = {len(output)}')
+
+    '''
+    VERSION 1
     '''
     # codes = driver.find_elements(By.CLASS_NAME, 'code')
     # remains = driver.find_elements(By.CLASS_NAME, 'remain')
@@ -104,7 +132,5 @@ def get_session_info(target_date: date) -> list:
 
 
 # ### FOR TEST ###
-# sale_date = date(2025, 3, 1)
+# sale_date = date(2025, 3, 8)
 # output = get_session_info(sale_date)
-# for tuple in output:
-#     print(tuple)
