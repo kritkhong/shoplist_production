@@ -29,7 +29,7 @@ def get_session_info(target_date: date) -> list:
     input_pass = driver.find_element(By.NAME, 'password')
     input_pass.send_keys(os.environ['VRICH_PASS'])
     button = driver.find_element(
-        By.XPATH, '/html/body/div/b/div/form/div[3]/div[2]/button')
+        By.XPATH, '//button[text()=\'Sign In\']')
     button.click()
     print('[utils.get_session_info]: logging in...')
 
@@ -53,37 +53,66 @@ def get_session_info(target_date: date) -> list:
         sale_date_ele.clear()
         sale_date_ele.send_keys(target_date_str)
         sale_date_ele.send_keys(Keys.ENTER)
-        # this button indicate sale date has changed and Javascipt finish loading
-        add_stock_btn = driver.find_element(By.ID, 'add_from_stock')
-        wait = WebDriverWait(add_stock_btn, timeout=10)
-        wait.until(lambda btn: btn.get_attribute('style') == "display: none;")
+        # this button indicate sale date has changed
+        wait = WebDriverWait(driver, timeout=10)
+        wait.until_not(lambda d: d.find_element(
+            By.XPATH, '//button[@id=\'add_from_stock\']').is_displayed())
+        wait.until_not(lambda d: d.find_element(
+            By.XPATH, '//li[@class=\'monitor-item\'][1]').is_displayed())
         # driver.save_screenshot('./image1_5.png')
     else:
         print('[utils.get_session_info]: sale date correct, continue...')
+        wait = WebDriverWait(driver, timeout=10)
+        wait.until(lambda d: d.find_element(
+            By.XPATH, '//li[@class=\'monitor-item\'][1]').is_displayed())
 
     '''
-    VERSION 3: Refined version 1
+    VERSION 4: After long... session of XPath tutorail
     '''
-    wait = WebDriverWait(driver, timeout=10)
-    wait.until(lambda d: len(d.find_elements(By.CLASS_NAME, 'code'))
-               > 2)  # 2 .code elements already existed as table head
-
-    codes = driver.find_elements(By.CLASS_NAME, 'code')[2:]
-    remains = driver.find_elements(By.CLASS_NAME, 'remain')[1:]
-    print(
-        f'[utils.get_session_info]: Total .code elements found = {len(codes)}')
+    # iterate one by one
     output = []
-    for i in range(len(codes)):
-        if codes[i].text and remains[i].text:
-            code_des = codes[i].text.strip().split()
-            code = code_des[0].strip('!')  # sometime code contain '!' in VRIch
-            description = ' '.join(code_des[1:])
-            count = remains[i].text.split()[0]
-            output.append((code, description, count))
-            print(
-                f'[utils.get_session_info]: adding{(code, description, count)}')
-            # driver.save_screenshot('./image2.png')  # screenshot
+    idx = 1
+    while (True):
+        try:
+            item = driver.find_element(
+                By.XPATH, f'//li[@class=\'monitor-item\'][{idx}]')
+        except NoSuchElementException:
+            break
+
+        is_hide = item.get_attribute('hide')
+        if not is_hide:
+            code = item.get_attribute('data-code')
+            caption = item.get_attribute('data-description')
+            count = item.get_attribute('data-details_count')
+            output.append((code, caption, count))
+            print(f'[utils.get_session_info]: adding{(code, caption, count)}')
+        idx += 1
+
     print(f'[utils.get_session_info]: Total output = {len(output)}')
+
+    '''
+    VERSION 3: Refined version 1 -> Still not good enough
+    '''
+    # wait = WebDriverWait(driver, timeout=10)
+    # wait.until(lambda d: len(d.find_elements(By.CLASS_NAME, 'code'))
+    #            > 2)  # 2 .code elements already existed as table head
+
+    # codes = driver.find_elements(By.CLASS_NAME, 'code')[2:]
+    # remains = driver.find_elements(By.CLASS_NAME, 'remain')[1:]
+    # print(
+    #     f'[utils.get_session_info]: Total .code elements found = {len(codes)}')
+    # output = []
+    # for i in range(len(codes)):
+    #     if codes[i].text and remains[i].text:
+    #         code_des = codes[i].text.strip().split()
+    #         code = code_des[0].strip('!')  # sometime code contain '!' in VRIch
+    #         description = ' '.join(code_des[1:])
+    #         count = remains[i].text.split()[0]
+    #         output.append((code, description, count))
+    #         print(
+    #             f'[utils.get_session_info]: adding{(code, description, count)}')
+    #         # driver.save_screenshot('./image2.png')  # screenshot
+    # print(f'[utils.get_session_info]: Total output = {len(output)}')
 
     '''
     VERSION 2: take too much memory server cannot run
@@ -132,5 +161,5 @@ def get_session_info(target_date: date) -> list:
 
 
 # ### FOR TEST ###
-# sale_date = date(2025, 3, 8)
+# sale_date = date(2025, 3, 1)
 # output = get_session_info(sale_date)
