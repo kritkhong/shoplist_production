@@ -67,28 +67,30 @@ def get_session_info(target_date: date) -> list:
             By.XPATH, '//li[@class=\'monitor-item\'][1]').is_displayed())
 
     '''
-    VERSION 4: After long... session of XPath tutorail
+    VERSION 4: After long session of XPath tutorial/ This still barely work on 512 MB memory server, working fine on localhost.
     '''
-    # iterate one by one
-    output = []
-    idx = 1
-    while (True):
-        try:
-            item = driver.find_element(
-                By.XPATH, f'//li[@class=\'monitor-item\'][{idx}]')
-        except NoSuchElementException:
-            break
+    # # iterate one by one
+    # output = []
+    # idx = 1
+    # while (True):
+    #     try:
+    #         item = driver.find_element(
+    #             By.XPATH, f'//li[@class=\'monitor-item\'][{idx}]')
+    #     except NoSuchElementException:
+    #         print(
+    #             f'[utils.get_session_info]: Hit break NoSuchElementException idx={idx}...')
+    #         break
 
-        is_hide = item.get_attribute('hide')
-        if not is_hide:
-            code = item.get_attribute('data-code')
-            caption = item.get_attribute('data-description')
-            count = item.get_attribute('data-details_count')
-            output.append((code, caption, count))
-            print(f'[utils.get_session_info]: adding{(code, caption, count)}')
-        idx += 1
+    #     is_hide = item.get_attribute('hide')
+    #     if not is_hide:
+    #         code = item.get_attribute('data-code')
+    #         caption = item.get_attribute('data-description')
+    #         count = item.get_attribute('data-details_count')
+    #         output.append((code, caption, count))
+    #         print(f'[utils.get_session_info]: adding{(code, caption, count)}')
+    #     idx += 1
 
-    print(f'[utils.get_session_info]: Total output = {len(output)}')
+    # print(f'[utils.get_session_info]: Total output = {len(output)}')
 
     '''
     VERSION 3: Refined version 1 -> Still not good enough
@@ -97,22 +99,22 @@ def get_session_info(target_date: date) -> list:
     # wait.until(lambda d: len(d.find_elements(By.CLASS_NAME, 'code'))
     #            > 2)  # 2 .code elements already existed as table head
 
-    # codes = driver.find_elements(By.CLASS_NAME, 'code')[2:]
-    # remains = driver.find_elements(By.CLASS_NAME, 'remain')[1:]
-    # print(
-    #     f'[utils.get_session_info]: Total .code elements found = {len(codes)}')
-    # output = []
-    # for i in range(len(codes)):
-    #     if codes[i].text and remains[i].text:
-    #         code_des = codes[i].text.strip().split()
-    #         code = code_des[0].strip('!')  # sometime code contain '!' in VRIch
-    #         description = ' '.join(code_des[1:])
-    #         count = remains[i].text.split()[0]
-    #         output.append((code, description, count))
-    #         print(
-    #             f'[utils.get_session_info]: adding{(code, description, count)}')
-    #         # driver.save_screenshot('./image2.png')  # screenshot
-    # print(f'[utils.get_session_info]: Total output = {len(output)}')
+    codes = driver.find_elements(By.CLASS_NAME, 'code')[2:]
+    remains = driver.find_elements(By.CLASS_NAME, 'remain')[1:]
+    print(
+        f'[utils.get_session_info]: Total .code elements found = {len(codes)}')
+    output = []
+    for i in range(len(codes)):
+        if codes[i].text and remains[i].text:
+            code_des = codes[i].text.strip().split()
+            code = code_des[0].strip('!')  # sometime code contain '!' in VRIch
+            description = ' '.join(code_des[1:])
+            count = remains[i].text.split()[0]
+            output.append((code, description, count))
+            print(
+                f'[utils.get_session_info]: adding{(code, description, count)}')
+            # driver.save_screenshot('./image2.png')  # screenshot
+    print(f'[utils.get_session_info]: Total output = {len(output)}')
 
     '''
     VERSION 2: take too much memory server cannot run

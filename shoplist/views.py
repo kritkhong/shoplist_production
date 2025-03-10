@@ -55,7 +55,7 @@ def create_session(request):
                 sale_session = SaleSession.objects.get(sale_date=input_date)
                 messages.error(request,
                                'Sale session already existed, use "Update" instead.')
-                return HttpResponseRedirect(reverse('shoplist:buying_list', args=[str(sale_session), 'all']))
+                return HttpResponseRedirect(reverse('shoplist:buying_list', args=[str(sale_session), 'buying']))
             except ObjectDoesNotExist:
                 sale_session = SaleSession.objects.create(sale_date=input_date)
 
@@ -96,7 +96,7 @@ def create_session(request):
                                 print(
                                     f'-- [{f.name}] does not match any product in current session--')
 
-            return HttpResponseRedirect(reverse('shoplist:buying_list', args=[str(sale_session), 'all']))
+            return HttpResponseRedirect(reverse('shoplist:buying_list', args=[str(sale_session), 'buying']))
     else:
         form = NewSessionForm
         return render(request, "shoplist/create_session.html", {'form': form})
@@ -160,7 +160,7 @@ def update_buy_list(request):
             report['create_new'] += code + ', '
     if report['create_new']:
         messages.info(request, 'New imports: '+report['create_new'])
-    return HttpResponseRedirect(reverse('shoplist:buying_list', args=[str(sale_session), 'all']))
+    return HttpResponseRedirect(reverse('shoplist:buying_list', args=[str(sale_session), 'buying']))
 
 
 @login_required(login_url='/users/login')
@@ -177,11 +177,6 @@ def add_photos(request, session_id):
                 if f.content_type.startswith('image'):
                     if ' copy' in f.name:
                         continue
-                    ## THINK ABOUT THIS ##
-                        ## IF IMAGE NOT IN PRODUCTS LISTED FOR PHOTO ADDING ##
-                        ## DO NOT CREATE THE IMAGE OBJECT ##
-
-                        ## HOW TO CREATE LATER ##
 
                     code_regex = r'([A-Z]\d{2,3}(_\d+)?)'
                     matches = re.findall(code_regex, f.name)
@@ -204,7 +199,7 @@ def add_photos(request, session_id):
                                 print(
                                     f'--[{f.name}] does not match any object in current update--')
 
-            return HttpResponseRedirect(reverse('shoplist:buying_list', args=[str(sale_session), 'all']))
+            return HttpResponseRedirect(reverse('shoplist:buying_list', args=[str(sale_session), 'buying']))
     else:
         form = AddPhotoForm
         context = {
