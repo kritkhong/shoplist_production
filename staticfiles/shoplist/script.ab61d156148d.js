@@ -9,7 +9,7 @@ const adjustBuyIndicator = function(pk, bought_amount, order_amount){
                 $("#exceed_warn_"+pk).text('');
         } else if (remain < 0){
                 $("#buy_indicator_"+pk).html('<div class="text-bg-danger"><p class="display-2">EXCEED</p></div>');
-                $("#exceed_warn_"+pk).text('⁉️ exceed ');
+                $("#exceed_warn_"+pk).text('⁉️');
         } else if (bought_amount > 0){
                 $("#buy_indicator_"+pk).html('<div class="text-bg-success"><p class="display-1">DONE</p></div>');
                 $("#exceed_warn_"+pk).text('');

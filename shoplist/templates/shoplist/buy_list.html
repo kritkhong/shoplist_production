@@ -117,6 +117,7 @@
 
             
             <div class="row justify-content-end card-body">
+                <div class="col-6 text-danger" id="exceed_warn_{{product.id}}"></div>
                 <form class="buy-form col-6">
                     {% csrf_token %}
                     <div class="input-group input-group-lg">
