@@ -41,7 +41,6 @@ $(".buy-form").submit(function (e){
                         adjustBuyIndicator(product['pk'],bought_amount,order_amount)
                         $("#buy_input_"+product['pk']).val('');
                         $("#amount_"+product['pk']).text(bought_amount)
-                        $("#last_buy_"+product['pk']).text('last buy:' + bought_amount)
                         if (bought_amount <= order_amount) {
                                 window.scrollBy({
                                         top: $("#field_"+product['pk']).height()+18,

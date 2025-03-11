@@ -10,7 +10,7 @@ const adjustBuyIndicator = function(pk, bought_amount, order_amount){
         } else if (remain < 0){
                 $("#buy_indicator_"+pk).html('<div class="text-bg-danger"><p class="display-2">EXCEED</p></div>');
                 $("#exceed_warn_"+pk).text('⁉️ exceed ');
-                $("#amount_"+pk).css("color","red");
+                $("#amount_"+product['pk']).css("color","red");
         } else if (bought_amount > 0){
                 $("#buy_indicator_"+pk).html('<div class="text-bg-success"><p class="display-1">DONE</p></div>');
                 $("#exceed_warn_"+pk).text('');
@@ -41,7 +41,6 @@ $(".buy-form").submit(function (e){
                         adjustBuyIndicator(product['pk'],bought_amount,order_amount)
                         $("#buy_input_"+product['pk']).val('');
                         $("#amount_"+product['pk']).text(bought_amount)
-                        $("#last_buy_"+product['pk']).text('last buy:' + bought_amount)
                         if (bought_amount <= order_amount) {
                                 window.scrollBy({
                                         top: $("#field_"+product['pk']).height()+18,
