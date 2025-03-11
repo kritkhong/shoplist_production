@@ -34,6 +34,8 @@ def get_session_info(target_date: date) -> list:
     print('[utils.get_session_info]: logging in...')
 
     # toggle sales-monitor view
+    wait = WebDriverWait(driver, timeout=10)
+    wait.until(lambda d: d.find_element(By.ID, 'product-list'))
     is_product_list = driver.find_element(By.ID, 'product-list').is_displayed()
     if (is_product_list):
         print('[utils.get_session_info]: toggle sales monitor view...')
@@ -47,25 +49,27 @@ def get_session_info(target_date: date) -> list:
     date_str = sale_date_ele.get_attribute('value')
     target_date_str = target_date.strftime("%d/%m/%Y")
 
-    # sale_date is not the most recent
-    if (target_date_str != date_str):
+    wait.until(lambda d: d.find_element(
+        By.XPATH, '//li[@class=\'monitor-item\'][1]').is_displayed())
+
+    first_item_id = driver.find_element(
+        By.XPATH, '//li[@class=\'monitor-item\'][1]').get_attribute('id')
+
+    # sale_date is the most recent
+    if (target_date_str == date_str):
+        print('[utils.get_session_info]: sale date correct, continue...')
+    else:
         print('[utils.get_session_info]: changing sale date...')
         sale_date_ele.clear()
         sale_date_ele.send_keys(target_date_str)
         sale_date_ele.send_keys(Keys.ENTER)
-        # this button indicate sale date has changed
-        wait = WebDriverWait(driver, timeout=10)
-        wait.until_not(lambda d: d.find_element(
-            By.XPATH, '//button[@id=\'add_from_stock\']').is_displayed())
-        wait.until_not(lambda d: d.find_element(
-            By.XPATH, '//li[@class=\'monitor-item\'][1]').is_displayed())
-        # driver.save_screenshot('./image1_5.png')
-    else:
-        print('[utils.get_session_info]: sale date correct, continue...')
-        wait = WebDriverWait(driver, timeout=10)
-        wait.until(lambda d: d.find_element(
-            By.XPATH, '//li[@class=\'monitor-item\'][1]').is_displayed())
+        # # this button indicate sale date has changed
+        # wait.until_not(lambda d: d.find_element(
+        #     By.XPATH, '//button[@id=\'add_from_stock\']').is_displayed())
 
+        wait.until(lambda d: d.find_element(
+            By.XPATH, '//li[@class=\'monitor-item\'][1]').get_attribute('id') != first_item_id)
+        # driver.save_screenshot('./image1_5.png')
     '''
     VERSION 4: After long session of XPath tutorial/ This still barely work on 512 MB memory server, working fine on localhost.
     '''
@@ -99,22 +103,22 @@ def get_session_info(target_date: date) -> list:
     # wait.until(lambda d: len(d.find_elements(By.CLASS_NAME, 'code'))
     #            > 2)  # 2 .code elements already existed as table head
 
-    codes = driver.find_elements(By.CLASS_NAME, 'code')[2:]
-    remains = driver.find_elements(By.CLASS_NAME, 'remain')[1:]
-    print(
-        f'[utils.get_session_info]: Total .code elements found = {len(codes)}')
-    output = []
-    for i in range(len(codes)):
-        if codes[i].text and remains[i].text:
-            code_des = codes[i].text.strip().split()
-            code = code_des[0].strip('!')  # sometime code contain '!' in VRIch
-            description = ' '.join(code_des[1:])
-            count = remains[i].text.split()[0]
-            output.append((code, description, count))
-            print(
-                f'[utils.get_session_info]: adding{(code, description, count)}')
-            # driver.save_screenshot('./image2.png')  # screenshot
-    print(f'[utils.get_session_info]: Total output = {len(output)}')
+    # codes = driver.find_elements(By.CLASS_NAME, 'code')[2:]
+    # remains = driver.find_elements(By.CLASS_NAME, 'remain')[1:]
+    # print(
+    #     f'[utils.get_session_info]: Total .code elements found = {len(codes)}')
+    # output = []
+    # for i in range(len(codes)):
+    #     if codes[i].text and remains[i].text:
+    #         code_des = codes[i].text.strip().split()
+    #         code = code_des[0].strip('!')  # sometime code contain '!' in VRIch
+    #         description = ' '.join(code_des[1:])
+    #         count = remains[i].text.split()[0]
+    #         output.append((code, description, count))
+    #         print(
+    #             f'[utils.get_session_info]: adding{(code, description, count)}')
+    #         # driver.save_screenshot('./image2.png')  # screenshot
+    # print(f'[utils.get_session_info]: Total output = {len(output)}')
 
     '''
     VERSION 2: take too much memory server cannot run
@@ -122,20 +126,23 @@ def get_session_info(target_date: date) -> list:
     # wait = WebDriverWait(driver, timeout=10)
     # wait.until(lambda d: len(d.find_elements(
     #     By.CLASS_NAME, 'monitor-item')) > 1)
-    # monitor_items = driver.find_elements(By.CLASS_NAME, 'monitor-item')
-    # print(
-    #     f'[utils.get_session_info]: Total monitor-items found = {len(monitor_items)}')
-    # # driver.save_screenshot('./image2.png')  # screenshot
 
-    # output = []
-    # for monitor_item in monitor_items:
-    #     is_hide = monitor_item.get_attribute('hide')
-    #     if not is_hide:
-    #         code = monitor_item.get_attribute('data-code')
-    #         caption = monitor_item.get_attribute('data-description')
-    #         count = monitor_item.get_attribute('data-details_count')
-    #         output.append((code, caption, count))
-    # print(f'[utils.get_session_info]: Monitor-items used = {len(output)}')
+    monitor_items = driver.find_elements(
+        By.XPATH, '//li[@class=\'monitor-item\']')
+    print(
+        f'[utils.get_session_info]: Total monitor-items found = {len(monitor_items)}')
+    # driver.save_screenshot('./image2.png')  # screenshot
+
+    output = []
+    for monitor_item in monitor_items:
+        # is_hide = monitor_item.get_attribute('hide')
+        # if not is_hide:
+        code = monitor_item.get_attribute('data-code')
+        caption = monitor_item.get_attribute('data-description')
+        count = monitor_item.get_attribute('data-details_count')
+        output.append((code, caption, count))
+        # print(f'[utils.get_session_info]: adding {(code, caption, count)}')
+    print(f'[utils.get_session_info]: Sending output len = {len(output)}')
 
     '''
     VERSION 1

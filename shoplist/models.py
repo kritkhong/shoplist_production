@@ -31,6 +31,7 @@ class Product(models.Model):
     description_text = models.CharField(max_length=150)
     bought_amount = models.IntegerField(default=0)
     order_amount = models.IntegerField()
+    is_manual = models.BooleanField(default=False)
     image = models.ForeignKey(
         Image, on_delete=models.SET_NULL, blank=True, null=True,)
 

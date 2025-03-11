@@ -71,7 +71,12 @@
                     <h3>{{ product.description_text }}</h3>
                     <div class="row">
                         <div class="col-auto">
-                            <h3><span id="amount_{{product.id}}">{{product.bought_amount}}</span> / <span id="order_{{product.id}}">{{product.order_amount}}</span></h3>
+                            <h3><span id="amount_{{product.id}}">{{product.bought_amount}}</span> / 
+                                {% if product.is_manual %}
+                                <span id="order_{{product.id}}" style="color: red;">{{product.order_amount}}</span>
+                                {% else %}
+                                <span id="order_{{product.id}}">{{product.order_amount}}</span></h3>
+                                {% endif %}
                         </div>
                         <div class="col">
                             <form class="adjust-order">

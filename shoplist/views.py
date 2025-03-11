@@ -131,6 +131,7 @@ def adjust_order(request):
             product = Product.objects.get(pk=product_id)
             product.order_amount = F(
                 'order_amount') + int(request.POST['order_adjust'])
+            product.is_manual = True
             product.save()
             product.refresh_from_db()
             ser_instance = serializers.serialize('json', [product, ])
@@ -143,17 +144,30 @@ def adjust_order(request):
 def update_buy_list(request):
     sale_session = SaleSession.objects.get(pk=request.POST['sale_date_id'])
     product_list = get_session_info(sale_session.sale_date)
-    report = {
-        'create_new': ''
-    }
+    new_count = 0
+    mod_count = 0
     # breakpoint()
     for code, caption, count in product_list:
         try:
             product = Product.objects.get(
                 sale_date=sale_session, sale_code=code,)
-            product.description_text = caption
-            product.order_amount = count
-            product.save()
+            count = int(count)
+            is_change = False
+            if product.description_text != caption:
+                product.description_text = caption
+                is_change = True
+            if count > product.order_amount:
+                product.order_amount = count
+                product.is_manual = False
+                is_change = True
+            if product.is_manual and count == product.order_amount:
+                product.is_manual = False
+                is_change = True
+            if is_change:
+                product.save()
+                print(f'[UPDATE]: modified {code}')
+                mod_count += 1
+
         except ObjectDoesNotExist:
             product = Product.objects.create(
                 sale_date=sale_session,
@@ -161,9 +175,11 @@ def update_buy_list(request):
                 description_text=caption,
                 order_amount=count,
             )
-            report['create_new'] += code + ', '
-    if report['create_new']:
-        messages.info(request, 'New imports: '+report['create_new'])
+            new_count += 1
+    print(
+        f'[UPDATE]: Total modified = {mod_count}, Total new created = {new_count}')
+    if new_count:
+        messages.info(request, f'New imports: {new_count}')
     return HttpResponseRedirect(reverse('shoplist:buying_list', args=[str(sale_session), 'buying']))
 
 
