@@ -90,15 +90,22 @@
                                 {% endif %}
                         </div>
                         <div class="col">
-                            <form class="adjust-order">
-                                {% csrf_token %}
-                                <input type="hidden" name="product_id" value={{product.id}}>
-                                <input type="hidden" name="url" value={% url 'shoplist:adjust' %}> {% comment %} sending url to javascript to not have to hard code the url {% endcomment %}
-                                <input type="hidden" class="order_adjust" name="order_adjust">
-                                {% comment %} <span>Adjust order:</span> {% endcomment %}
-                                <button class="minus_order btn btn-outline-secondary" type="submit">-1</button>
-                                <button class="plus_order btn btn-outline-secondary" type="submit">+1</button>    
-                            </form>    
+                            <div class="row">
+                                <form class="col-auto adjust-order">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="product_id" value={{product.id}}>
+                                    <input type="hidden" name="url" value={% url 'shoplist:adjust' %}> {% comment %} sending url to javascript to not have to hard code the url {% endcomment %}
+                                    <input type="hidden" class="order_adjust" name="order_adjust" value="-1">
+                                    <button class="btn btn-outline-secondary" type="submit">-</button>  
+                                </form>    
+                                <form class="col-auto adjust-order">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="product_id" value={{product.id}}>
+                                    <input type="hidden" name="url" value={% url 'shoplist:adjust' %}> {% comment %} sending url to javascript to not have to hard code the url {% endcomment %}
+                                    <input type="hidden" class="order_adjust" name="order_adjust" value="1">
+                                    <button class="btn btn-outline-secondary" type="submit">+</button>  
+                                </form> 
+                            </div>
                         </div>
                     </div> 
                 </div>

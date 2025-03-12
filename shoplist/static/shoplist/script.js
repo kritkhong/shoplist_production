@@ -61,13 +61,13 @@ $(".buy-form").submit(function (e){
         })
 })
 
-$(".plus_order").mouseenter(function(){
-        $(this).siblings("input.order_adjust").val('1');
-})
+// $(".plus_order").mouseenter(function(){
+//         $(this).siblings("input.order_adjust").val('1');
+// })
 
-$(".minus_order").mouseenter(function(){
-        $(this).siblings("input.order_adjust").val('-1');
-})
+// $(".minus_order").mouseenter(function(){
+//         $(this).siblings("input.order_adjust").val('-1');
+// })
 
 
 $(".adjust-order").submit(function (e){
@@ -75,9 +75,9 @@ $(".adjust-order").submit(function (e){
         const serializedData = $(this).serialize()
         const formData = new FormData(this);
         url = formData.get('url')
-        // for (const pair of formData.entries()) {
-        //         console.log(pair[0], pair[1]);
-        //       }
+        for (const pair of formData.entries()) {
+                console.log(pair[0], pair[1]);
+              }
         $.ajax({
                 type: 'POST',
                 url: url,
