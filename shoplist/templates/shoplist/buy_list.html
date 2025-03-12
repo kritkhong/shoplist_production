@@ -63,111 +63,149 @@
     
     {% if product_list %}
     <div class="container-fluid">
-        {% for product in product_list %}
-        <div id="field_{{product.id}}" class="card mb-3">  
-            <div class="row card-body">
-                <div class="col">
-                    <div class="row">
-                        <div class="col">
-                            <h1>{{ product.sale_code }}</h1>
+        {% if filter == 'buying' or filter == 'done' %}
+            {% for product in product_list %}
+            <div id="field_{{product.id}}" class="card mb-3">  
+                <div class="row card-body">
+                    <div class="col">
+                        <div class="row">
+                            <div class="col">
+                                <h1>{{ product.sale_code }}</h1>
+                            </div>
                         </div>
-                        {% if filter == 'no_sale' or filter == 'all' %}
-                        <div class="col-auto">
-                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#img_modal_{{product.id}}">Pic</button>
-                        </div>
-                        {% endif %}
+                        <div class="row">
+                            <div class="col-auto">
+                                <h3><span id="amount_{{product.id}}">{{product.bought_amount}}</span> / 
+                                    {% if product.is_manual %}
+                                    <span id="order_{{product.id}}" style="color: red;">{{product.order_amount}}</span>
+                                    {% else %}
+                                    <span id="order_{{product.id}}">{{product.order_amount}}</span>
+                                    {% endif %}
+                                </h3>
+                                    
+                            </div>
+                            <div class="col">
+                                <div class="row">
+                                    <form class="col-auto adjust-order">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="product_id" value={{product.id}}>
+                                        <input type="hidden" name="url" value={% url 'shoplist:adjust' %}> {% comment %} sending url to javascript to not have to hard code the url {% endcomment %}
+                                        <input type="hidden" class="order_adjust" name="order_adjust" value="-1">
+                                        <button class="btn btn-outline-secondary" type="submit">-</button>  
+                                    </form>    
+                                    <form class="col-auto adjust-order">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="product_id" value={{product.id}}>
+                                        <input type="hidden" name="url" value={% url 'shoplist:adjust' %}> {% comment %} sending url to javascript to not have to hard code the url {% endcomment %}
+                                        <input type="hidden" class="order_adjust" name="order_adjust" value="1">
+                                        <button class="btn btn-outline-secondary" type="submit">+</button>  
+                                    </form> 
+                                </div>
+                            </div>
+                        </div> 
                     </div>
-                    {% if filter == 'no_sale' or filter == 'all' %}
-                    <h3>{{ product.description_text }}</h3>
-                    {% endif %}
-                    <div class="row">
-                        <div class="col-auto">
-                            <h3><span id="amount_{{product.id}}">{{product.bought_amount}}</span> / 
-                                {% if product.is_manual %}
-                                <span id="order_{{product.id}}" style="color: red;">{{product.order_amount}}</span>
-                                {% else %}
-                                <span id="order_{{product.id}}">{{product.order_amount}}</span></h3>
-                                {% endif %}
+                    <div class="col-auto align-self-center">
+                        <div id="buy_indicator_{{product.id}}">
+                            {% if product.remain > 0 %}
+                                <div class="bg-primary-subtle text-primary-emphasis p-3">
+                                    <p>buy:</p>
+                                    <p class="display-1">{{product.remain}}</p>
+                                </div>
+                            {% elif product.remain < 0 %}
+                                <div class="text-bg-danger">
+                                    <p class="display-2">EXCEED</p>
+                                </div>
+                            {% elif product.order_amount > 0 %}
+                                <div class="text-bg-success">
+                                    <p class="display-1">DONE</p>
+                                </div>
+                            {% else %}
+                                <div></div>
+                            {% endif %}
                         </div>
-                        <div class="col">
-                            <div class="row">
-                                <form class="col-auto adjust-order">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="product_id" value={{product.id}}>
-                                    <input type="hidden" name="url" value={% url 'shoplist:adjust' %}> {% comment %} sending url to javascript to not have to hard code the url {% endcomment %}
-                                    <input type="hidden" class="order_adjust" name="order_adjust" value="-1">
-                                    <button class="btn btn-outline-secondary" type="submit">-</button>  
-                                </form>    
-                                <form class="col-auto adjust-order">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="product_id" value={{product.id}}>
-                                    <input type="hidden" name="url" value={% url 'shoplist:adjust' %}> {% comment %} sending url to javascript to not have to hard code the url {% endcomment %}
-                                    <input type="hidden" class="order_adjust" name="order_adjust" value="1">
-                                    <button class="btn btn-outline-secondary" type="submit">+</button>  
-                                </form> 
-                            </div>
-                        </div>
-                    </div> 
-                </div>
-                <div class="col-auto align-self-center">
-                    <div id="buy_indicator_{{product.id}}">
-                        {% if product.remain > 0 %}
-                            <div class="bg-primary-subtle text-primary-emphasis p-3">
-                                <p>buy:</p>
-                                <p class="display-1">{{product.remain}}</p>
-                            </div>
-                        {% elif product.remain < 0 %}
-                            <div class="text-bg-danger">
-                                <p class="display-2">EXCEED</p>
-                            </div>
-                        {% elif product.order_amount > 0 %}
-                            <div class="text-bg-success">
-                                <p class="display-1">DONE</p>
-                            </div>
-                        {% else %}
-                            <div></div>
-                        {% endif %}
+                
                     </div>
-            
                 </div>
-            </div>
-            {% if filter == 'buying' or filter == 'done' %}
-            <div class="row card-body" >
-                <div class="ratio ratio-1x1">
-                    <img src="{{product.image.image.url}}" class="object-fit-contain border rounded" data-bs-toggle="modal" data-bs-target="#img_modal_{{product.id}}">
-                </div>
-            </div>
-            {% endif %}
-            
 
-            
-            <div class="row justify-content-end card-body">
-                <div class="col-6">
-                    <p class="text-danger" id="exceed_warn_{{product.id}}"></p>
-                    <p class="text-secondary" id="last_buy_{{product.id}}"></p>
+                <div class="row card-body" >
+                    <div class="ratio ratio-1x1">
+                        <img src="{{product.image.image.url}}" class="object-fit-contain border rounded" data-bs-toggle="modal" data-bs-target="#img_modal_{{product.id}}">
+                    </div>
                 </div>
                 
-                <form class="buy-form col-6">
-                    {% csrf_token %}
-                    <div class="input-group input-group-lg">
-                        <input type="hidden" name="product_id" value={{product.id}}>
-                        <input type="hidden" name="url" value={% url 'shoplist:buy' %}> {% comment %} sending url to javascript to not have to hard code the url {% endcomment %}
-                        <input type="number" class="form-control" name="buy_amount" id="buy_input_{{product.id}}"  {% if product.remain > 0 %} value="{{product.remain}}" {% else %}value="0" {% endif %} required>
-                        <button class="buy_btn btn btn-success" type="submit">Buy</button>
-                        <br>
+                <div class="row justify-content-end card-body">
+                    <div class="col-6">
+                        <p class="text-danger" id="exceed_warn_{{product.id}}"></p>
+                        <p class="text-secondary" id="last_buy_{{product.id}}"></p>
                     </div>
-                </form>    
-            </div>
-        </div>
-        <!-- Modal -->
-        <div class="modal fade" id="img_modal_{{product.id}}" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <img src="{{product.image.image.url}}" data-bs-dismiss="modal">
+                    
+                    <form class="buy-form col-6">
+                        {% csrf_token %}
+                        <div class="input-group input-group-lg">
+                            <input type="hidden" name="product_id" value={{product.id}}>
+                            <input type="hidden" name="url" value={% url 'shoplist:buy' %}> {% comment %} sending url to javascript to not have to hard code the url {% endcomment %}
+                            <input type="number" class="form-control" name="buy_amount" id="buy_input_{{product.id}}"  {% if product.remain > 0 %} value="{{product.remain}}" {% else %}value="0" {% endif %} required>
+                            <button class="buy_btn btn btn-success" type="submit">Buy</button>
+                            <br>
+                        </div>
+                    </form>    
                 </div>
             </div>
-        </div>
-        {% endfor %}
+            <!-- Modal -->
+            <div class="modal fade" id="img_modal_{{product.id}}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <img src="{{product.image.image.url}}" data-bs-dismiss="modal">
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">B/O</th>
+                        <th scope="col" colspan="2">Adjust</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in product_list %}
+                    <tr>
+                        <th>{{product.sale_code}}</th>
+                        <td>{{product.description_text}}</td>
+                        <td>
+                            <span id="amount_{{product.id}}">{{product.bought_amount}}</span> / 
+                                    {% if product.is_manual %}
+                                    <span id="order_{{product.id}}" style="color: red;">{{product.order_amount}}</span>
+                                    {% else %}
+                                    <span id="order_{{product.id}}">{{product.order_amount}}</span>
+                                    {% endif %}
+                        </td>
+                        <td>
+                            <form class="adjust-order">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value={{product.id}}>
+                                <input type="hidden" name="url" value={% url 'shoplist:adjust' %}> {% comment %} sending url to javascript to not have to hard code the url {% endcomment %}
+                                <input type="hidden" class="order_adjust" name="order_adjust" value="-1">
+                                <button class="btn btn-outline-secondary" type="submit">-</button>  
+                            </form>    
+                        </td> 
+                        <td>
+                            <form class="adjust-order">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value={{product.id}}>
+                                <input type="hidden" name="url" value={% url 'shoplist:adjust' %}> {% comment %} sending url to javascript to not have to hard code the url {% endcomment %}
+                                <input type="hidden" class="order_adjust" name="order_adjust" value="1">
+                                <button class="btn btn-outline-secondary" type="submit">+</button>  
+                            </form> 
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
     </div>
 
             
