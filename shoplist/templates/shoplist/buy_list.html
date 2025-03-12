@@ -67,8 +67,19 @@
         <div id="field_{{product.id}}" class="card mb-3">  
             <div class="row card-body">
                 <div class="col">
-                    <h1>{{ product.sale_code }}</h1>
+                    <div class="row">
+                        <div class="col">
+                            <h1>{{ product.sale_code }}</h1>
+                        </div>
+                        {% if filter == 'no_sale' or filter == 'all' %}
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#img_modal_{{product.id}}">Pic</button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if filter == 'no_sale' or filter == 'all' %}
                     <h3>{{ product.description_text }}</h3>
+                    {% endif %}
                     <div class="row">
                         <div class="col-auto">
                             <h3><span id="amount_{{product.id}}">{{product.bought_amount}}</span> / 
@@ -113,12 +124,14 @@
             
                 </div>
             </div>
+            {% if filter == 'buying' or filter == 'done' %}
             <div class="row card-body" >
                 <div class="ratio ratio-1x1">
                     <img src="{{product.image.image.url}}" class="object-fit-contain border rounded" data-bs-toggle="modal" data-bs-target="#img_modal_{{product.id}}">
                 </div>
-                
             </div>
+            {% endif %}
+            
 
             
             <div class="row justify-content-end card-body">
