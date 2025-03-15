@@ -64,13 +64,14 @@
     {% if product_list %}
     <div class="container-fluid">
         {% if filter == 'buying' or filter == 'done' %}
+            <input type="text" id="searchCard" placeholder="Search code">
             {% for product in product_list %}
             <div id="field_{{product.id}}" class="card mb-3">  
                 <div class="row card-body">
                     <div class="col">
                         <div class="row">
                             <div class="col">
-                                <h1>{{ product.sale_code }}</h1>
+                                <h1 class="sale-code">{{ product.sale_code }}</h1>
                             </div>
                         </div>
                         <div class="row">
@@ -140,17 +141,19 @@
                 </div>
                 
                 <div class="row justify-content-end card-body">
-                    <div class="col-6">
+                    <div class="col-4">
                         <p class="text-danger" id="exceed_warn_{{product.id}}"></p>
                         <p class="text-secondary" id="last_buy_{{product.id}}"></p>
                     </div>
                     
-                    <form class="buy-form col-6">
+                    <form class="buy-form col-8">
                         {% csrf_token %}
                         <div class="input-group input-group-lg">
                             <input type="hidden" name="product_id" value={{product.id}}>
                             <input type="hidden" name="url" value={% url 'shoplist:buy' %}> {% comment %} sending url to javascript to not have to hard code the url {% endcomment %}
+                            <span class="input-group-text buy-adjust" product-id={{product.id}} value=-1>-</span>
                             <input type="number" class="form-control" name="buy_amount" id="buy_input_{{product.id}}"  {% if product.remain > 0 %} value="{{product.remain}}" {% else %}value="0" {% endif %} required>
+                            <span class="input-group-text buy-adjust" product-id={{product.id}} value=1>+</span>
                             <button class="buy_btn btn btn-success" type="submit">Buy</button>
                             <br>
                         </div>
@@ -167,6 +170,8 @@
             </div>
             {% endfor %}
         {% else %}
+            <input type="text" id="searchTable" placeholder="Search code">
+
             <table class="table table-striped">
                 <thead>
                     <tr>

@@ -21,12 +21,75 @@ const adjustBuyIndicator = function(pk, bought_amount, order_amount){
 
 }
 
+buyAdjBtns = document.getElementsByClassName("buy-adjust")
+for (let i = 0; i < buyAdjBtns.length; i++){
+        buyAdjBtns[i].addEventListener("click", function() {
+                const productId = this.getAttribute("product-id");
+                const adjValue = parseInt(this.getAttribute("value"));
+                buyInput = document.getElementById("buy_input_"+productId)
+                buyInputVal = buyInput.value
+                if(!buyInputVal){
+                        buyInputVal = 0
+                }
+                newVal = parseInt(buyInputVal) + adjValue
+                buyInput.value = newVal
+        })
+}
+
+
+cardSearchInput = document.getElementById("searchCard")
+if (cardSearchInput){
+        cardSearchInput.addEventListener("keyup", function () {
+                searchValue = this.value.toUpperCase()
+                cards = document.getElementsByClassName("card")
+                for(let i = 0; i < cards.length; i++){
+                        h1 = cards[i].getElementsByClassName("sale-code")[0]; 
+                        if (h1) {
+                                let code = h1.textContent;
+                                if (code.toUpperCase().indexOf(searchValue)>-1){
+                                        cards[i].style.display = "";
+                                } else {
+                                        cards[i].style.display = "none";
+                                }
+                        }
+                }
+        
+        })
+}
+
+
+
+tableSearchInput = document.getElementById("searchTable")
+if (tableSearchInput) {
+        tableSearchInput.addEventListener("keyup", function () {
+                searchValue = this.value.toUpperCase()
+                tbody = document.getElementsByTagName("tbody")[0]
+                tr = tbody.getElementsByTagName("tr")
+                for(let i = 0; i < tr.length; i++){
+                        th = tr[i].getElementsByTagName("th")[0];
+                        if (th) {
+                                let code = th.textContent;
+                                if (code.toUpperCase().indexOf(searchValue)>-1){
+                                        tr[i].style.display = "";
+                                } else {
+                                        tr[i].style.display = "none";
+                                }
+                        }
+                }
+        
+        })
+}
+
+
+
+
 $(".buy-form").submit(function (e){
         e.preventDefault();
         const serializedData = $(this).serialize()
         
         const formData = new FormData(this);
         url = formData.get('url')
+        buy_value = formData.get('buy_amount')
         $.ajax({
                 type: 'POST',
                 url: url,
@@ -41,7 +104,7 @@ $(".buy-form").submit(function (e){
                         adjustBuyIndicator(product['pk'],bought_amount,order_amount)
                         $("#buy_input_"+product['pk']).val('');
                         $("#amount_"+product['pk']).text(bought_amount)
-                        $("#last_buy_"+product['pk']).text('last buy:' + bought_amount)
+                        $("#last_buy_"+product['pk']).text('last buy:' + buy_value)
                         if (bought_amount <= order_amount) {
                                 window.scrollBy({
                                         top: $("#field_"+product['pk']).height()+18,
@@ -141,7 +204,6 @@ for (let i = 0; i < orderAdjBtns.length; i++ ){
                         if (data.hasOwnProperty("instance")){
                                 const instance = JSON.parse(data['instance']);
                                 const product = instance[0];
-                                console.log(product);    
                                 boughtAmount = product["fields"]["bought_amount"];
                                 orderAmount = product["fields"]["order_amount"];
                                 orderCountObj = document.getElementById("order_"+product['pk'])

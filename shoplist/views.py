@@ -78,7 +78,7 @@ def create_session(request):
                     if ' copy' in f.name:
                         continue
 
-                    code_regex = r'([A-Z]\d{2,3}(_\d+)?)'
+                    code_regex = r'([A-Z]\d{2,3}(#\d+)?)'
                     matches = re.findall(code_regex, f.name)
                     if matches:
                         img_obj_created = False
@@ -198,7 +198,7 @@ def add_photos(request, session_id):
                     if ' copy' in f.name:
                         continue
 
-                    code_regex = r'([A-Z]\d{2,3}(_\d+)?)'
+                    code_regex = r'([A-Z]\d{2,3}(#\d+)?)'
                     matches = re.findall(code_regex, f.name)
                     if matches:
                         img_obj_created = False
