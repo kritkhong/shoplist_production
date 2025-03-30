@@ -29,6 +29,7 @@ class Product(models.Model):
     sale_date = models.ForeignKey(SaleSession, on_delete=models.CASCADE)
     sale_code = models.CharField(max_length=10)
     description_text = models.CharField(max_length=150)
+    note = models.CharField(max_length=150, default='')
     bought_amount = models.IntegerField(default=0)
     order_amount = models.IntegerField()
     is_manual = models.BooleanField(default=False)

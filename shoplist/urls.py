@@ -12,4 +12,5 @@ urlpatterns = [
     path('update', views.update_buy_list, name='update_buy_list'),
     path('adjust', views.adjust_order, name='adjust'),
     path('add_photos/<int:session_id>', views.add_photos, name='add_photos'),
+    path('edit_note', views.edit_note, name='edit_note'),
 ]

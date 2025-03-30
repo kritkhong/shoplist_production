@@ -141,6 +141,20 @@ def adjust_order(request):
 
 
 @login_required(login_url='/users/login')
+def edit_note(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == "POST":
+        product_id = request.POST['product_id']
+        try:
+            product = Product.objects.get(pk=product_id)
+            if product.note != request.POST['note']:
+                product.note = request.POST['note']
+                product.save()
+            return JsonResponse({"success": True}, status=200)
+        except ObjectDoesNotExist:
+            return JsonResponse({"error": 'ObjectDoesNotExist'}, status=400)
+
+
+@login_required(login_url='/users/login')
 def update_buy_list(request):
     sale_session = SaleSession.objects.get(pk=request.POST['sale_date_id'])
     product_list = get_session_info(sale_session.sale_date)
@@ -156,7 +170,7 @@ def update_buy_list(request):
             if product.description_text != caption:
                 product.description_text = caption
                 is_change = True
-            if count > product.order_amount:
+            if (not product.is_manual and count != product.order_amount) or (product.is_manual and count > product.order_amount):
                 product.order_amount = count
                 product.is_manual = False
                 is_change = True

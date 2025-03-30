@@ -37,6 +37,7 @@ for (let i = 0; i < buyAdjBtns.length; i++){
 }
 
 
+
 cardSearchInput = document.getElementById("searchCard")
 if (cardSearchInput){
         cardSearchInput.addEventListener("keyup", function () {
@@ -178,6 +179,36 @@ function getCookie(name) {
         }
         return cookieValue;
       }
+
+notes = document.getElementsByClassName("note")
+for (let i = 0; i < notes.length; i++){
+        notes[i].addEventListener("focusout", function(){
+                console.log("focusout");
+                const formData = new FormData();
+                const productId = this.getAttribute("product-id");
+                const noteText = this.value;
+                formData.append("product_id", productId);
+                formData.append("note", noteText);
+                const url = this.getAttribute("url");
+                fetch(url,{
+                        method: "POST",
+                        credentials: "same-origin",
+                        headers: {
+                                "x-requested-with": "XMLHttpRequest",
+                                "X-CSRFToken": getCookie("csrftoken"),
+                        },
+                        body: formData
+                })
+                .then(response => response.json())
+                .then(function(data) {
+                        if (data.hasOwnProperty("error")){
+                                alert(data['error'])
+                        }
+                      })
+
+
+        })
+}
 
 orderAdjBtns = document.getElementsByClassName("adjust-order-btn")
 for (let i = 0; i < orderAdjBtns.length; i++ ){

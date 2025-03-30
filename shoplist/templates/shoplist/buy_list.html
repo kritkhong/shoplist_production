@@ -159,6 +159,12 @@
                         </div>
                     </form>    
                 </div>
+                <div class="card-body">
+                    <div class="form-floating">
+                        <textarea class="note form-control" product-id={{product.id}} url={% url 'shoplist:edit_note' %} placeholder="Leave a note here" id="note_{{product.id}}">{{product.note}}</textarea>
+                        <label for="note_{{product.id}}">Note</label>
+                    </div>
+                </div>
             </div>
             <!-- Modal -->
             <div class="modal fade" id="img_modal_{{product.id}}" tabindex="-1">
