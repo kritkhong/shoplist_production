@@ -183,7 +183,7 @@ function getCookie(name) {
 notes = document.getElementsByClassName("note")
 for (let i = 0; i < notes.length; i++){
         notes[i].addEventListener("focusout", function(){
-                console.log("focusout");
+                console.log("note change saved");
                 const formData = new FormData();
                 const productId = this.getAttribute("product-id");
                 const noteText = this.value;
