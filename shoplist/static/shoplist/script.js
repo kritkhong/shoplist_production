@@ -44,7 +44,7 @@ if (cardSearchInput){
                 searchValue = this.value.toUpperCase()
                 cards = document.getElementsByClassName("card")
                 for(let i = 0; i < cards.length; i++){
-                        h1 = cards[i].getElementsByClassName("sale-code")[0]; 
+                        const h1 = cards[i].getElementsByClassName("sale-code")[0]; 
                         if (h1) {
                                 let code = h1.textContent;
                                 if (code.toUpperCase().indexOf(searchValue)>-1){
