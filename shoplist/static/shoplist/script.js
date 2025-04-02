@@ -1,8 +1,8 @@
-document.getElementById("sale_date").onchange = function() {
-        window.location.href = this.value;        
-};
-
 const adjustBuyIndicator = function(pk, bought_amount, order_amount){
+        if (typeof pk === 'undefined' || typeof bought_amount === 'undefined' || typeof order_amount === 'undefined') {
+                console.error("Invalid parameters for adjustBuyIndicator");
+                return;
+            }
         const remain = order_amount - bought_amount;
         if(remain > 0){
                 $("#buy_indicator_"+pk).html('<div class="bg-primary-subtle text-primary-emphasis p-3"><p>buy:</p><p class="display-1">'+ remain+'</p></div>');    
@@ -21,64 +21,154 @@ const adjustBuyIndicator = function(pk, bought_amount, order_amount){
 
 }
 
-const buyAdjBtns = document.getElementsByClassName("buy-adjust");
-if( buyAdjBtns.length ){
-        for (let i = 0; i < buyAdjBtns.length; i++){
-                buyAdjBtns[i].addEventListener("click", function() {
-                        const productId = this.getAttribute("product-id");
-                        const adjValue = parseInt(this.getAttribute("value"));
-                        const buyInput = document.getElementById("buy_input_"+productId);
-                        const buyInputVal = parseInt(buyInput.value || 0);
-                        const newVal = parseInt(buyInputVal) + adjValue;
-                        buyInput.value = newVal
+function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + "=")) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+
+document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("sale_date").onchange = function() {
+                window.location.href = this.value;        
+        };
+
+        const buyAdjBtns = document.getElementsByClassName("buy-adjust");
+        if( buyAdjBtns.length ){
+                for (let i = 0; i < buyAdjBtns.length; i++){
+                        buyAdjBtns[i].addEventListener("click", function() {
+                                const productId = this.getAttribute("product-id");
+                                const adjValue = parseInt(this.getAttribute("value"));
+                                const buyInput = document.getElementById("buy_input_"+productId);
+                                const buyInputVal = parseInt(buyInput.value || 0);
+                                const newVal = parseInt(buyInputVal) + adjValue;
+                                buyInput.value = newVal
+                        })
+                }
+        }
+
+        const cardSearchInput = document.getElementById("searchCard")
+        if (cardSearchInput){
+                cardSearchInput.addEventListener("keyup", function () {
+                        const searchValue = this.value.toUpperCase()
+                        const cards = document.getElementsByClassName("card")
+                        for(let i = 0; i < cards.length; i++){
+                                const h1 = cards[i].getElementsByClassName("sale-code")[0];
+                                const code = h1 ? h1.textContent.toUpperCase() : "";
+                                cards[i].style.display = code.indexOf(searchValue) > -1 ? "" : "none";
+                        }
+                
                 })
         }
-}
 
+        const tableSearchInput = document.getElementById("searchTable")
+        if (tableSearchInput) {
+                tableSearchInput.addEventListener("keyup", function () {
+                        const searchValue = this.value.toUpperCase()
+                        const tbody = document.getElementsByTagName("tbody")[0]
+                        if (!tbody) return;
 
-
-
-const cardSearchInput = document.getElementById("searchCard")
-if (cardSearchInput){
-        cardSearchInput.addEventListener("keyup", function () {
-                const searchValue = this.value.toUpperCase()
-                const cards = document.getElementsByClassName("card")
-                for(let i = 0; i < cards.length; i++){
-                        const h1 = cards[i].getElementsByClassName("sale-code")[0];
-                        const code = h1 ? h1.textContent.toUpperCase() : "";
-                        cards[i].style.display = code.indexOf(searchValue) > -1 ? "" : "none";
-                }
-        
-        })
-}
-
-
-
-const tableSearchInput = document.getElementById("searchTable")
-if (tableSearchInput) {
-        tableSearchInput.addEventListener("keyup", function () {
-                const searchValue = this.value.toUpperCase()
-                const tbody = document.getElementsByTagName("tbody")[0]
-                if (!tbody) return;
-
-                const tr = tbody.getElementsByTagName("tr")
-                const searchValueLength = searchValue.length;
-                for(let i = 0; i < tr.length; i++){
-                        const th = tr[i].getElementsByTagName("th")[0];
-                        if (th) {
-                                const code = th.textContent.toUpperCase();
-                                if (code.indexOf(searchValue) > -1 || searchValueLength === 0){
-                                        tr[i].style.display = "";
-                                } else {
-                                        tr[i].style.display = "none";
+                        const tr = tbody.getElementsByTagName("tr")
+                        const searchValueLength = searchValue.length;
+                        for(let i = 0; i < tr.length; i++){
+                                const th = tr[i].getElementsByTagName("th")[0];
+                                if (th) {
+                                        const code = th.textContent.toUpperCase();
+                                        if (code.indexOf(searchValue) > -1 || searchValueLength === 0){
+                                                tr[i].style.display = "";
+                                        } else {
+                                                tr[i].style.display = "none";
+                                        }
                                 }
                         }
-                }
-        
-        })
-}
+                
+                })
+        }
+
+        const notes = document.getElementsByClassName("note")
+        for (let i = 0; i < notes.length; i++){
+                notes[i].addEventListener("blur", function(){
+                        console.log("note change saved");
+                        const formData = new FormData();
+                        const productId = this.getAttribute("product-id");
+                        const noteText = this.value;
+                        formData.append("product_id", productId);
+                        formData.append("note", noteText);
+                        const url = this.getAttribute("url");
+                        fetch(url,{
+                                method: "POST",
+                                credentials: "same-origin",
+                                headers: {
+                                        "x-requested-with": "XMLHttpRequest",
+                                        "X-CSRFToken": getCookie("csrftoken"),
+                                },
+                                body: formData
+                        })
+                        .then(response => response.json())
+                        .then(function(data) {
+                                if (data.hasOwnProperty("error")){
+                                        alert(data['error'])
+                                }
+                        })
 
 
+                })
+        }
+
+        const orderAdjBtns = document.getElementsByClassName("adjust-order-btn")
+        for (let i = 0; i < orderAdjBtns.length; i++ ){
+                orderAdjBtns[i].addEventListener("click", function () {
+                        const formData = new FormData();
+                        // console.log(this);
+                        const productId = this.getAttribute("product-id");
+                        const value = this.getAttribute("value");
+                        formData.append("product_id", productId);
+                        formData.append("order_adjust", value);
+                        const url = this.getAttribute("url");
+                        const serializedData = new URLSearchParams(formData);
+                        fetch(url, {
+                                method: "POST",
+                                credentials: "same-origin",
+                                headers: {
+                                "x-requested-with": "XMLHttpRequest",
+                                "X-CSRFToken": getCookie("csrftoken"),
+                                },
+                                body: formData
+                        })
+                        .then(response => response.json())
+                        .then(function(data) {
+                                if (data.hasOwnProperty("instance")){
+                                        const instance = JSON.parse(data['instance']);
+                                        const product = instance[0];
+                                        const boughtAmount = product["fields"]["bought_amount"];
+                                        const orderAmount = product["fields"]["order_amount"];
+                                        const orderCountObj = document.getElementById("order_"+product['pk'])
+                                        orderCountObj.textContent = orderAmount;
+                                        orderCountObj.style.color = "red";
+                                        adjustBuyIndicator(product['pk'], boughtAmount, orderAmount)
+
+                                } else {
+                                        alert(data['error'])
+                                }
+                                        
+
+
+                        })
+
+
+                })
+        }
+
+});
 
 
 $(".buy-form").submit(function (e){
@@ -110,11 +200,6 @@ $(".buy-form").submit(function (e){
                                         behavior: "smooth",
                                       });
                         }
-
-                        
-
-
-
                 },
                 error: function (response) {
                         alert(response["responseJSON"]["error"]);
@@ -162,93 +247,8 @@ $(".buy-form").submit(function (e){
 //         })
 // })
 
-function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== "") {
-          const cookies = document.cookie.split(";");
-          for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === (name + "=")) {
-              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-              break;
-            }
-          }
-        }
-        return cookieValue;
-      }
-
-notes = document.getElementsByClassName("note")
-for (let i = 0; i < notes.length; i++){
-        notes[i].addEventListener("focusout", function(){
-                console.log("note change saved");
-                const formData = new FormData();
-                const productId = this.getAttribute("product-id");
-                const noteText = this.value;
-                formData.append("product_id", productId);
-                formData.append("note", noteText);
-                const url = this.getAttribute("url");
-                fetch(url,{
-                        method: "POST",
-                        credentials: "same-origin",
-                        headers: {
-                                "x-requested-with": "XMLHttpRequest",
-                                "X-CSRFToken": getCookie("csrftoken"),
-                        },
-                        body: formData
-                })
-                .then(response => response.json())
-                .then(function(data) {
-                        if (data.hasOwnProperty("error")){
-                                alert(data['error'])
-                        }
-                      })
 
 
-        })
-}
-
-orderAdjBtns = document.getElementsByClassName("adjust-order-btn")
-for (let i = 0; i < orderAdjBtns.length; i++ ){
-        orderAdjBtns[i].addEventListener("click", function () {
-                const formData = new FormData();
-                // console.log(this);
-                const productId = this.getAttribute("product-id");
-                const value = this.getAttribute("value");
-                formData.append("product_id", productId);
-                formData.append("order_adjust", value);
-                const url = this.getAttribute("url");
-                const serializedData = new URLSearchParams(formData);
-                fetch(url, {
-                        method: "POST",
-                        credentials: "same-origin",
-                        headers: {
-                          "x-requested-with": "XMLHttpRequest",
-                          "X-CSRFToken": getCookie("csrftoken"),
-                        },
-                        body: formData
-                      })
-                      .then(response => response.json())
-                      .then(function(data) {
-                        if (data.hasOwnProperty("instance")){
-                                const instance = JSON.parse(data['instance']);
-                                const product = instance[0];
-                                boughtAmount = product["fields"]["bought_amount"];
-                                orderAmount = product["fields"]["order_amount"];
-                                orderCountObj = document.getElementById("order_"+product['pk'])
-                                orderCountObj.textContent = orderAmount;
-                                orderCountObj.style.color = "red";
-                                adjustBuyIndicator(product['pk'], boughtAmount, orderAmount)
-
-                        } else {
-                                alert(data['error'])
-                        }
-                                
 
 
-                      })
-
-
-        })
-}
 
