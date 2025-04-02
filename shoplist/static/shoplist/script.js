@@ -3,7 +3,7 @@ document.getElementById("sale_date").onchange = function() {
 };
 
 const adjustBuyIndicator = function(pk, bought_amount, order_amount){
-        remain = order_amount - bought_amount;
+        const remain = order_amount - bought_amount;
         if(remain > 0){
                 $("#buy_indicator_"+pk).html('<div class="bg-primary-subtle text-primary-emphasis p-3"><p>buy:</p><p class="display-1">'+ remain+'</p></div>');    
                 $("#exceed_warn_"+pk).text('');
@@ -21,38 +21,32 @@ const adjustBuyIndicator = function(pk, bought_amount, order_amount){
 
 }
 
-buyAdjBtns = document.getElementsByClassName("buy-adjust")
-for (let i = 0; i < buyAdjBtns.length; i++){
-        buyAdjBtns[i].addEventListener("click", function() {
-                const productId = this.getAttribute("product-id");
-                const adjValue = parseInt(this.getAttribute("value"));
-                buyInput = document.getElementById("buy_input_"+productId)
-                buyInputVal = buyInput.value
-                if(!buyInputVal){
-                        buyInputVal = 0
-                }
-                newVal = parseInt(buyInputVal) + adjValue
-                buyInput.value = newVal
-        })
+const buyAdjBtns = document.getElementsByClassName("buy-adjust");
+if( buyAdjBtns.length ){
+        for (let i = 0; i < buyAdjBtns.length; i++){
+                buyAdjBtns[i].addEventListener("click", function() {
+                        const productId = this.getAttribute("product-id");
+                        const adjValue = parseInt(this.getAttribute("value"));
+                        const buyInput = document.getElementById("buy_input_"+productId);
+                        const buyInputVal = parseInt(buyInput.value || 0);
+                        const newVal = parseInt(buyInputVal) + adjValue;
+                        buyInput.value = newVal
+                })
+        }
 }
 
 
 
-cardSearchInput = document.getElementById("searchCard")
+
+const cardSearchInput = document.getElementById("searchCard")
 if (cardSearchInput){
         cardSearchInput.addEventListener("keyup", function () {
-                searchValue = this.value.toUpperCase()
-                cards = document.getElementsByClassName("card")
+                const searchValue = this.value.toUpperCase()
+                const cards = document.getElementsByClassName("card")
                 for(let i = 0; i < cards.length; i++){
-                        const h1 = cards[i].getElementsByClassName("sale-code")[0]; 
-                        if (h1) {
-                                let code = h1.textContent;
-                                if (code.toUpperCase().indexOf(searchValue)>-1){
-                                        cards[i].style.display = "";
-                                } else {
-                                        cards[i].style.display = "none";
-                                }
-                        }
+                        const h1 = cards[i].getElementsByClassName("sale-code")[0];
+                        const code = h1 ? h1.textContent.toUpperCase() : "";
+                        cards[i].style.display = code.indexOf(searchValue) > -1 ? "" : "none";
                 }
         
         })
@@ -60,17 +54,20 @@ if (cardSearchInput){
 
 
 
-tableSearchInput = document.getElementById("searchTable")
+const tableSearchInput = document.getElementById("searchTable")
 if (tableSearchInput) {
         tableSearchInput.addEventListener("keyup", function () {
-                searchValue = this.value.toUpperCase()
-                tbody = document.getElementsByTagName("tbody")[0]
-                tr = tbody.getElementsByTagName("tr")
+                const searchValue = this.value.toUpperCase()
+                const tbody = document.getElementsByTagName("tbody")[0]
+                if (!tbody) return;
+
+                const tr = tbody.getElementsByTagName("tr")
+                const searchValueLength = searchValue.length;
                 for(let i = 0; i < tr.length; i++){
-                        th = tr[i].getElementsByTagName("th")[0];
+                        const th = tr[i].getElementsByTagName("th")[0];
                         if (th) {
-                                let code = th.textContent;
-                                if (code.toUpperCase().indexOf(searchValue)>-1){
+                                const code = th.textContent.toUpperCase();
+                                if (code.indexOf(searchValue) > -1 || searchValueLength === 0){
                                         tr[i].style.display = "";
                                 } else {
                                         tr[i].style.display = "none";
@@ -107,8 +104,9 @@ $(".buy-form").submit(function (e){
                         $("#amount_"+product['pk']).text(bought_amount)
                         $("#last_buy_"+product['pk']).text('last buy:' + buy_value)
                         if (bought_amount <= order_amount) {
+                                const SCROLL_OFFSET = 18;
                                 window.scrollBy({
-                                        top: $("#field_"+product['pk']).height()+18,
+                                        top: $("#field_"+product['pk']).height()+ SCROLL_OFFSET,
                                         behavior: "smooth",
                                       });
                         }
