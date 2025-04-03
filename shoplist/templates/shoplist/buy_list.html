@@ -56,14 +56,14 @@
     <div class="nav nav-tabs">
         <a href="{% url 'shoplist:buying_list' sale_date_str=this_session filter='buying'%}" {% if filter == 'buying' %}class="nav-link active" {% else %} class="nav-link" {% endif %}>BUYING</a>
         <a href="{% url 'shoplist:buying_list' sale_date_str=this_session filter='done'%}" {% if filter == 'done' %}class="nav-link active" {% else %} class="nav-link"  {% endif %}>DONE</a>
-        <a href="{% url 'shoplist:buying_list' sale_date_str=this_session filter='no_sale'%}" {% if filter == 'no_sale' %}class="nav-link active" {% else %} class="nav-link"  {% endif %}>NO-SALE</a>
+        <a href="{% url 'shoplist:buying_list' sale_date_str=this_session filter='ref'%}" {% if filter == 'ref' %}class="nav-link active" {% else %} class="nav-link"  {% endif %}>REF</a>
         <a href="{% url 'shoplist:buying_list' sale_date_str=this_session filter='all'%}" {% if filter == 'all' %}class="nav-link active" {% else %} class="nav-link" {% endif %}>ALL</a>
         
     </div>
     
     {% if product_list %}
     <div class="container-fluid">
-        {% if filter == 'buying' or filter == 'done' %}
+        {% if filter == 'buying' or filter == 'done' or filter == 'ref' %}
             <input type="text" id="searchCard" placeholder="Search code">
             {% for product in product_list %}
             <div id="field_{{product.id}}" class="card mb-3">

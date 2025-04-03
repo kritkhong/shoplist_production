@@ -33,9 +33,8 @@ def buying_list(request, sale_date_str, filter):
     elif filter == 'done':
         product_list = product_list.filter(
             bought_amount__gte=F('order_amount')).exclude(bought_amount=0)
-    elif filter == 'no_sale':
-        product_list = product_list.filter(
-            order_amount=0).exclude(bought_amount__gt=0)
+    elif filter == 'ref':
+        product_list = product_list.filter(order_amount__gt=0)
 
     product_list = natsorted(product_list, key=lambda o: o.sale_code)
     all_session = SaleSession.objects.all().order_by(
