@@ -24,5 +24,6 @@ urlpatterns = [
     path("shoplist/", include('shoplist.urls')),
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
+    path('customer/', include('customer.urls')),
     # used for serving files uploaded during development.
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
