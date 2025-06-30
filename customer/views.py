@@ -20,6 +20,10 @@ def code_ref(request, sale_date_str, filter):
             sale_date=sale_date).filter(order_amount__gt=0)
     elif filter == 'all':
         product_list = Product.objects.filter(sale_date=sale_date)
+    elif filter:
+        code_start = filter.upper()
+        print('in')
+        product_list = Product.objects.filter(sale_date=sale_date, sale_code__regex=rf'^[{code_start}]')
     else:
         return redirect(reverse('customer:index'))
     product_list = natsorted(product_list, key=lambda o: o.sale_code)
