@@ -55,13 +55,13 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 
@@ -97,6 +97,7 @@ DATABASES = {
         'PASSWORD': os.environ['A_DB_PASSWORD'],
         'HOST': os.environ['A_DB_HOST'],
         'PORT': os.environ['A_DB_PORT'],
+        'CONN_MAX_AGE': 600,
     }
 }
 

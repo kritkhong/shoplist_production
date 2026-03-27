@@ -20,48 +20,37 @@ def ensure_chrome_debug_session():
     """Ensure Chrome is running with debug port"""
     global chrome_debug_process
     
-    # Quick check if port 9222 is open (much faster than trying webdriver)
-    import socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(0.5)  # Only wait 0.5 seconds
-    is_port_open = sock.connect_ex(('127.0.0.1', 9222)) == 0
-    sock.close()
-    
-    if is_port_open:
-        # Port is open, verify it's actually Chrome
-        try:
-            chrome_options = Options()
-            chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
-            test_driver = webdriver.Chrome(options=chrome_options)
-            test_driver.quit()
-            print("[utils]: Chrome debug session already running")
-            return True
-        except:
-            pass
-    
-    # Chrome not running or not accessible
-    print("[utils]: Starting new Chrome debug session...")
-    
-    # Kill only Chrome with debug port (not user's regular Chrome)
-    subprocess.run(["pkill", "-f", "remote-debugging-port=9222"], capture_output=True)
-    time.sleep(2)
-    
-    # Start Chrome with debug port
-    chrome_cmd = [
-        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-        "--remote-debugging-port=9222",
-        "--user-data-dir=/tmp/chrome_dev_session",
-        "--no-first-run",
-        "--no-default-browser-check"
-    ]
-    
-    chrome_debug_process = subprocess.Popen(
-        chrome_cmd, 
-        stdout=subprocess.DEVNULL, 
-        stderr=subprocess.DEVNULL
-    )
-    time.sleep(5)
-    return False
+    # Check if Chrome debug is already running
+    try:
+        chrome_options = Options()
+        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+        test_driver = webdriver.Chrome(options=chrome_options)
+        test_driver.quit()
+        print("[utils]: Chrome debug session already running")
+        return True
+    except:
+        print("[utils]: Starting new Chrome debug session...")
+        
+        # Kill any existing Chrome
+        subprocess.run(["pkill", "-f", "Google Chrome"], capture_output=True)
+        time.sleep(2)
+        
+        # Start Chrome with debug port
+        chrome_cmd = [
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            "--remote-debugging-port=9222",
+            "--user-data-dir=/tmp/chrome_dev_session",
+            "--no-first-run",
+            "--no-default-browser-check"
+        ]
+        
+        chrome_debug_process = subprocess.Popen(
+            chrome_cmd, 
+            stdout=subprocess.DEVNULL, 
+            stderr=subprocess.DEVNULL
+        )
+        time.sleep(5)
+        return False
 
 def cleanup_chrome():
     """Cleanup Chrome process on exit"""
@@ -109,15 +98,35 @@ def get_session_info(target_date: date) -> list:
             pass
         
         if needs_login:
-            # Always require manual login to avoid Cloudflare detection
-            print("\n" + "="*60)
-            print("MANUAL LOGIN REQUIRED")
-            print("="*60)
-            print("1. Complete Cloudflare verification in Chrome")
-            print("2. Enter username and password")
-            print("3. Click Sign In")
-            print("="*60)
-            input("\nPress Enter after logging in manually...")
+            if not is_existing:
+                # First time - need manual intervention
+                print("\n" + "="*60)
+                print("FIRST TIME SETUP - MANUAL LOGIN REQUIRED")
+                print("="*60)
+                print("1. Complete Cloudflare verification in Chrome")
+                print("2. Enter username and password")
+                print("3. Click Sign In")
+                print("="*60)
+                input("\nPress Enter after logging in...")
+            else:
+                # Try automated login (session expired)
+                try:
+                    wait = WebDriverWait(driver, timeout=10)
+                    input_user = wait.until(EC.element_to_be_clickable((By.NAME, 'username')))
+                    input_user.clear()
+                    input_user.send_keys(os.environ['VRICH_USER'])
+                    
+                    input_pass = driver.find_element(By.NAME, 'password')
+                    input_pass.clear()
+                    input_pass.send_keys(os.environ['VRICH_PASS'])
+                    
+                    button = driver.find_element(By.XPATH, '//button[text()=\'Sign In\']')
+                    driver.execute_script("arguments[0].click();", button)
+                    print('[utils.get_session_info]: Auto-login attempted...')
+                    time.sleep(3)
+                except:
+                    print("\n[utils]: Auto-login failed, manual intervention needed")
+                    input("Please login manually and press Enter...")
         
         # Now we should be logged in - continue with data extraction
         wait = WebDriverWait(driver, timeout=10)
