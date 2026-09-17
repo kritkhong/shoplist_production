@@ -4,6 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from .models import SaleSession, Product, Image
 from django.urls import reverse
 from django.db.models import F
+from django.db import connection, transaction
 from datetime import date, datetime
 from natsort import natsorted
 from django.views.generic.edit import FormView
@@ -157,38 +158,59 @@ def edit_note(request):
 def update_buy_list(request):
     sale_session = SaleSession.objects.get(pk=request.POST['sale_date_id'])
     product_list = get_session_info(sale_session.sale_date)
-    new_count = 0
-    mod_count = 0
-    # breakpoint()
-    for code, caption, count in product_list:
-        try:
-            product = Product.objects.get(
-                sale_date=sale_session, sale_code=code,)
-            count = int(count)
-            is_change = False
-            if product.description_text != caption:
-                product.description_text = caption
-                is_change = True
-            if (not product.is_manual and count != product.order_amount) or (product.is_manual and count > product.order_amount):
-                product.order_amount = count
-                product.is_manual = False
-                is_change = True
-            if product.is_manual and count == product.order_amount:
-                product.is_manual = False
-                is_change = True
-            if is_change:
-                product.save()
-                print(f'[UPDATE]: modified {code}')
-                mod_count += 1
 
-        except ObjectDoesNotExist:
-            product = Product.objects.create(
+    # The scrape above can run for minutes, leaving the DB connection idle long
+    # enough for the managed Postgres to drop it. Close it so the write phase
+    # opens a fresh one instead of failing on a dead socket.
+    connection.close()
+
+    # Load every existing product for this session in one query, then diff in
+    # memory. This replaces ~2 queries per scraped item (previously ~1900 round
+    # trips to a remote DB) with a handful, so a single dropped connection can
+    # no longer kill the request part-way through.
+    existing = {
+        p.sale_code: p
+        for p in Product.objects.filter(sale_date=sale_session)
+    }
+
+    to_create = []
+    to_update = []
+    for code, caption, count in product_list:
+        count = int(count)
+        product = existing.get(code)
+        if product is None:
+            to_create.append(Product(
                 sale_date=sale_session,
                 sale_code=code,
                 description_text=caption,
                 order_amount=count,
-            )
-            new_count += 1
+            ))
+            continue
+
+        is_change = False
+        if product.description_text != caption:
+            product.description_text = caption
+            is_change = True
+        if (not product.is_manual and count != product.order_amount) or (product.is_manual and count > product.order_amount):
+            product.order_amount = count
+            product.is_manual = False
+            is_change = True
+        if product.is_manual and count == product.order_amount:
+            product.is_manual = False
+            is_change = True
+        if is_change:
+            to_update.append(product)
+
+    # All-or-nothing: a mid-write failure no longer leaves the table half updated.
+    with transaction.atomic():
+        if to_create:
+            Product.objects.bulk_create(to_create)
+        if to_update:
+            Product.objects.bulk_update(
+                to_update, ['description_text', 'order_amount', 'is_manual'])
+
+    new_count = len(to_create)
+    mod_count = len(to_update)
     print(
         f'[UPDATE]: Total modified = {mod_count}, Total new created = {new_count}')
     if new_count:
